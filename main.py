@@ -1,7 +1,7 @@
 import tensorflow as tf
 k = tf.keras
 kl = tf.keras.layers
-from circle_loss import SparseAmsoftmaxLoss, SparseCircleLoss, CircleLoss, Pair_CircleLoss
+from circle_loss import SparseAmsoftmaxLoss, SparseCircleLoss, CircleLoss, PairCircleLoss
 
 if __name__ == "__main__":
 

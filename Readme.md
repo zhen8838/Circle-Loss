@@ -13,7 +13,7 @@ The interpretation of this paper is recorded in [this blog](https://zhen8838.git
 # Usage
 
 ```python
-from circle_loss import SparseCircleLoss, CircleLoss, Pair_CircleLoss
+from circle_loss import SparseCircleLoss, CircleLoss, PairCircleLoss
 
 # General usage
 model.compile(
@@ -40,6 +40,17 @@ Circle Loss evaluate:
 10000/10000 [==============================] - 0s 40us/sample - loss: 12.5618 - acc: 0.8344
 ```
 
+You can test loss fuction:
+
+```
+python ./circle_loss.py
+circle loss:
+ [ 80.482956 284.16852 62.08397  87.57021 192.4977   87.34067 119.77495 41.9718 ]
+sparse circle loss:
+ [ 80.48296 284.16852  62.08397  87.57022 192.4977   87.34067 119.77495 41.9718 ]
+pair circle loss:
+ [ 80.48296 284.16852  62.08397  87.57022 192.4977   87.34067 119.77495 41.9718 ]
+```
 
 # Known issues
 
@@ -55,7 +66,7 @@ Circle Loss evaluate:
     It can be found that the classification vector of circle loss is not effectively separated:
     ![](emmbeding.png)
     
-2.  The loss function used for sparse labels on `circle_loss.py line 124` has a numerical overflow problem, so I used a slower method. 
+2.  The loss function used for sparse labels on `circle_loss.py line 124` has a numerical overflow problem, **so I used a slower method**. 
 
     If there is a better method, you can contact me.
     ```python
