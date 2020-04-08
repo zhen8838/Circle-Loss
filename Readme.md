@@ -30,7 +30,7 @@ model.compile(
 
 # Experiment
 
-Using cifar10 data set for classification experiment, `circle loss` is  better than [`am softmax loss`](https://arxiv.org/abs/1801.05599). (Python 2.7.4, tensorflow 2.1)
+Using cifar10 data set for classification experiment, `circle loss` is  better than [`am softmax loss`](https://arxiv.org/abs/1801.05599). (Python 3.7.4, tensorflow 2.1)
 
 ```
 python ./main.py
