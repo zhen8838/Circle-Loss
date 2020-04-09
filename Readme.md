@@ -17,7 +17,7 @@ from circle_loss import SparseCircleLoss, CircleLoss, PairCircleLoss
 
 # General usage
 model.compile(
-      loss=CircleLoss(gamma=64, margin=0.25, batch_size=batch_size),
+      loss=CircleLoss(gamma=64, margin=0.25),
       optimizer=k.optimizers.Adam(),
       metrics=[k.metrics.CategoricalAccuracy('acc')])
 # For Sparse Categorical such as face recognition 
