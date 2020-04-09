@@ -2,6 +2,23 @@ import tensorflow as tf
 k = tf.keras
 kl = tf.keras.layers
 from circle_loss import SparseAmsoftmaxLoss, SparseCircleLoss, CircleLoss, PairCircleLoss
+import matplotlib.pyplot as plt
+import cycler
+import numpy as np
+
+plt.style.use('seaborn-paper')
+plt.rcParams['axes.prop_cycle'] = cycler.cycler(
+    'color', plt.cm.tab10(np.linspace(0, 1, 9)))
+plt.rc('font', **{'weight': 'bold', 'size': '13'})
+plt.rc('axes', unicode_minus=False)
+params = {
+    'legend.fontsize': 'small',
+    'axes.labelsize': 'small',
+    'axes.titlesize': 'medium',
+    'xtick.labelsize': 'small',
+    'ytick.labelsize': 'small'
+}
+plt.rcParams.update(params)
 
 if __name__ == "__main__":
 
@@ -16,7 +33,7 @@ if __name__ == "__main__":
   train_x = ((train_x-127.5) / 127.5).astype('float32')
   test_x = ((test_x-127.5) / 127.5).astype('float32')
 
-  ams_model: k.Model = k.Sequential([
+  softmax_model: k.Model = k.Sequential([
       kl.Input(shape=(32, 32, 3)),
       kl.Conv2D(64, kernel_size=(3, 3), padding='SAME'),
       kl.BatchNormalization(),
@@ -44,39 +61,75 @@ if __name__ == "__main__":
       kl.Lambda(lambda x: tf.nn.l2_normalize(x, 1), name='emmbeding'),
       kl.Dense(10, use_bias=False, kernel_constraint=k.constraints.unit_norm())
   ])
-  circle_model = k.models.clone_model(ams_model)
+  ams_model = k.models.clone_model(softmax_model)
+  circle_model = k.models.clone_model(softmax_model)
+
+  softmax_model.compile(
+      loss=k.losses.SparseCategoricalCrossentropy(from_logits=True),
+      optimizer=k.optimizers.Adam(),
+      metrics=[k.metrics.SparseCategoricalAccuracy('acc')])
 
   ams_model.compile(
       loss=SparseAmsoftmaxLoss(batch_size=batch_size),
       optimizer=k.optimizers.Adam(),
       metrics=[k.metrics.SparseCategoricalAccuracy('acc')])
-  if not tf.io.gfile.exists('ams_loss.h5'):
-    ams_model.fit(
-        x=train_x,
-        y=train_y,
-        batch_size=batch_size,
-        epochs=20,
-        validation_data=(test_x, test_y))
-    ams_model.save('ams_loss.h5')
-  else:
-    ams_model.load_weights('ams_loss.h5')
 
   circle_model.compile(
       loss=SparseCircleLoss(batch_size=batch_size),
       optimizer=k.optimizers.Adam(),
       metrics=[k.metrics.SparseCategoricalAccuracy('acc')])
 
+  if not tf.io.gfile.exists('softmax_loss.h5'):
+    softmax_history = softmax_model.fit(
+        x=train_x,
+        y=train_y,
+        batch_size=batch_size,
+        epochs=20,
+        validation_data=(test_x, test_y))
+    softmax_model.save('softmax_loss.h5')
+    plt.plot(
+        softmax_history.epoch,
+        softmax_history.history['val_acc'],
+        label="softmax")
+  else:
+    softmax_model.load_weights('softmax_loss.h5')
+
+  if not tf.io.gfile.exists('ams_loss.h5'):
+    ams_history = ams_model.fit(
+        x=train_x,
+        y=train_y,
+        batch_size=batch_size,
+        epochs=20,
+        validation_data=(test_x, test_y))
+    ams_model.save('ams_loss.h5')
+    plt.plot(
+        ams_history.epoch, ams_history.history['val_acc'], label="am-softmax")
+  else:
+    ams_model.load_weights('ams_loss.h5')
+
   if not tf.io.gfile.exists('circle_loss.h5'):
 
-    circle_model.fit(
+    circle_history = circle_model.fit(
         x=train_x,
         y=train_y,
         batch_size=batch_size,
         epochs=20,
         validation_data=(test_x, test_y))
     circle_model.save('circle_loss.h5')
+    plt.plot(
+        circle_history.epoch,
+        circle_history.history['val_acc'],
+        label="circle loss")
+    plt.legend(loc='upper left')
+    plt.title('Validation Accuracy')
+    plt.tight_layout()
+    plt.savefig(
+        'benchmark.png', transparent=True, bbox_inches='tight', pad_inches=0)
+    plt.show()
   else:
     circle_model.load_weights('circle_loss.h5')
+  print('Softmax evaluate:')
+  softmax_model.evaluate(test_x, test_y, batch_size=batch_size)
   print('Am Softmax evaluate:')
   ams_model.evaluate(test_x, test_y, batch_size=batch_size)
   print('Circle Loss evaluate:')

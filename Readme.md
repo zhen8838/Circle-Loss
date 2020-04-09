@@ -34,11 +34,15 @@ Using cifar10 data set for classification experiment, `circle loss` is  better t
 
 ```
 python ./main.py
+Softmax evaluate:
+10000/10000 [==============================] - 2s 177us/sample - loss: 1.5902 - acc: 0.7456
 Am Softmax evaluate:
 10000/10000 [==============================] - 2s 187us/sample - loss: 5.8502 - acc: 0.7727
 Circle Loss evaluate:
 10000/10000 [==============================] - 0s 40us/sample - loss: 12.5618 - acc: 0.8344
 ```
+
+![](benchmark.png)
 
 You can test loss fuction:
 
