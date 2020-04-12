@@ -28,11 +28,13 @@ model.compile(
       metrics=[k.metrics.SparseCategoricalAccuracy('acc')])
 ```
 
+**NOTE:** In order to speed up the loss function, `SparseCircleLoss` does not support dynamic `batch_size`. if you need dynamic `batch_size` can refer from [this issue](https://github.com/zhen8838/Circle-Loss/issues/1)
+
 # Experiment
 
 Using cifar10 data set for classification experiment, `circle loss` is  better than [`am softmax loss`](https://arxiv.org/abs/1801.05599). (Python 3.7.4, tensorflow 2.1)
 
-```
+```sh
 python ./main.py
 Softmax evaluate:
 10000/10000 [==============================] - 2s 177us/sample - loss: 1.5902 - acc: 0.7456
@@ -46,7 +48,7 @@ Circle Loss evaluate:
 
 You can test loss fuction:
 
-```
+```sh
 python ./circle_loss.py
 circle loss:
  [ 80.482956 284.16852 62.08397  87.57021 192.4977   87.34067 119.77495 41.9718 ]
