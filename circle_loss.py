@@ -87,6 +87,7 @@ class CircleLoss(kls.Loss):
     alpha_p = tf.nn.relu(self.O_p - tf.stop_gradient(y_pred))
     alpha_n = tf.nn.relu(tf.stop_gradient(y_pred) - self.O_n)
     # yapf: disable
+    y_true = tf.cast(y_true, tf.float32)
     y_pred = (y_true * (alpha_p * (y_pred - self.Delta_p)) +
           (1-y_true) * (alpha_n * (y_pred - self.Delta_n))) * self.gamma
     # yapf: enable
