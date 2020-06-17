@@ -4,6 +4,10 @@ An unofficial Tensorflow2 implementation of the paper [Circle Loss: A Unified Pe
 
 The interpretation of this paper is recorded in [this blog](https://zhen8838.github.io/2020/04/07/circle-loss/)
 
+Add implementation of the paper [Proxy Anchor Loss for Deep Metric Learning](https://arxiv.org/abs/2003.13911)
+
+The interpretation of this paper is recorded in [this blog](https://zhen8838.github.io/2020/06/17/proxy-anchor/)
+
 - [x] Support class-level labels
 - [x] Support Sparse class-level labels
 - [x] Support pair-wise labels

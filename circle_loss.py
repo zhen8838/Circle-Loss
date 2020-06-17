@@ -50,8 +50,45 @@ class SparseAmsoftmaxLoss(kls.Loss):
 class AmsoftmaxLoss(SparseAmsoftmaxLoss):
 
   def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
-    y_pred = (y_true * (y_pred - self.margin) + (1-y_true) * y_pred) * self.scale
+    y_pred = (y_true * (y_pred - self.margin) + (1 - y_true) * y_pred) * self.scale
     return tf.nn.softmax_cross_entropy_with_logits(y_true, y_pred)
+
+
+class ProxyAnchorLoss(kls.Loss):
+
+  def __init__(self,
+               gamma: int = 32,
+               margin: float = 0.1,
+               batch_size: int = None,
+               reduction='auto',
+               name=None):
+    super().__init__(reduction=reduction, name=name)
+    self.gamma = gamma
+    self.margin = margin
+    if batch_size:
+      self.batch_size = batch_size
+      self.batch_idxs = tf.expand_dims(
+          tf.range(0, batch_size, dtype=tf.int32), 1)  # shape [batch,1]
+
+  def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
+    """ NOTE : y_pred must be cos similarity
+
+    Args:
+        y_true (tf.Tensor): shape [batch,ndim]
+        y_pred (tf.Tensor): shape [batch,ndim]
+
+    Returns:
+        tf.Tensor: loss
+    """
+    # The number of positive proxies
+    num_valid_proxies = tf.reduce_sum(tf.cast(tf.reduce_sum(
+        y_true, 0, keepdims=True) != 0, tf.float32))
+
+    # yapf: disable
+    y_pred = ((y_true * (y_pred - self.margin) / num_valid_proxies) +
+              ((1 - y_true) * (y_pred - self.margin) / tf.cast(tf.shape(y_true)[-1], tf.float32))) * self.gamma
+    # yapf: enable
+    return tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
 
 
 class CircleLoss(kls.Loss):
@@ -76,11 +113,11 @@ class CircleLoss(kls.Loss):
 
   def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """ NOTE : y_pred must be cos similarity
-    
+
     Args:
         y_true (tf.Tensor): shape [batch,ndim]
         y_pred (tf.Tensor): shape [batch,ndim]
-    
+
     Returns:
         tf.Tensor: loss
     """
@@ -89,7 +126,7 @@ class CircleLoss(kls.Loss):
     # yapf: disable
     y_true = tf.cast(y_true, tf.float32)
     y_pred = (y_true * (alpha_p * (y_pred - self.Delta_p)) +
-          (1-y_true) * (alpha_n * (y_pred - self.Delta_n))) * self.gamma
+              (1 - y_true) * (alpha_n * (y_pred - self.Delta_n))) * self.gamma
     # yapf: enable
     return tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
 
@@ -98,11 +135,11 @@ class SparseCircleLoss(CircleLoss):
 
   def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """ NOTE : y_pred must be cos similarity
-    
+
     Args:
         y_true (tf.Tensor): shape [batch,ndim]
         y_pred (tf.Tensor): shape [batch,ndim]
-    
+
     Returns:
         tf.Tensor: loss
     """
@@ -151,11 +188,11 @@ class PairCircleLoss(CircleLoss):
 
   def call(self, sp: tf.Tensor, sn: tf.Tensor) -> tf.Tensor:
     """ use within-class similarity and between-class similarity for loss
-    
+
     Args:
         sp (tf.Tensor): within-class similarity  shape [batch, K]
         sn (tf.Tensor): between-class similarity shape [batch, L]
-    
+
     Returns:
         tf.Tensor: loss
     """
